@@ -5,10 +5,11 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 INSTALL_REQUIRES = (HERE / "requirements.txt").read_text()
 
-VERSION = "0.1.0-alpha"
+PACKAGE_NAME = "sec-py"
+VERSION = "0.1.1-alpha"
 
 setup(
-    name="secpy",
+    name=PACKAGE_NAME,
     version=VERSION,
     author="Calvin Kessler",
     description=("Python library for interacting w/ the SEC REST API: https://www.sec.gov/edgar/sec-api-documentation"),
@@ -16,7 +17,7 @@ setup(
     install_requires=INSTALL_REQUIRES,
     keywords=["SEC", "EDGAR", "finance", "REST API wrapper"],
     url="https://github.com/McKalvan/secpy",
-    download_url="https://github.com/user/reponame/archive/v{}.tar.gz".format(VERSION),
+    download_url="https://github.com/McKalvan/secpy/archive/refs/tags/v{}.zip".format(VERSION),
     packages=find_packages(exclude="tests"),
     long_description=README,
     long_description_content_type="text/markdown",
