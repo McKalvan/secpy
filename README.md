@@ -8,11 +8,11 @@ temporarily banned or blacklisted by the SEC's REST API.
 ### Installation
 secpy is supported on Python 3+. secpy can be installed via [pip](https://pypi.org/project/pip/) as follows:
 
-`pip install secpy`
+`pip install sec-python`
 
 Verify the installation by running the following:
 
-`pip show secpy`
+`pip show sec-python`
 
 ### Quick Start
 The easiest way to get started with secpy is to instantiate a SECPyClient instance w/ a User-Agent to identify
