@@ -2,6 +2,7 @@ from enum import Enum
 
 from secpy.core.bulk_data import BulkDataEndpoint
 from secpy.core.endpoint_enum import EndpointEnum
+from secpy.core.mixins.base_data_object_mixin import BaseDataObjectMixin
 from secpy.core.mixins.base_endpoint_mixin import BaseEndpointMixin
 from secpy.core.network_client import NetworkClient
 from secpy.core.utils.cik_opts import CIKOpts
@@ -42,7 +43,7 @@ class SubmissionsBulkEndpoint(BulkDataEndpoint):
         return Submissions(data)
 
 
-class Submissions:
+class Submissions(BaseDataObjectMixin):
     class SubmissionsSchemaEnum(Enum):
         CIK = "cik"
         ENTITY_TYPE = "entityType"
@@ -105,7 +106,7 @@ class Submissions:
         return Filings(filings, self.cik)
 
 
-class Address:
+class Address(BaseDataObjectMixin):
     class AddressesSchemaEnum(Enum):
         STREET_1 = "street1"
         STREET_2 = "street2"
@@ -127,7 +128,7 @@ class Address:
         self.zip_code = data[self.AddressesSchemaEnum.ZIP_CODE.value]
 
 
-class HasFilingsMixin:
+class HasFilingsMixin(BaseDataObjectMixin):
     def __init__(self, cik):
         self.cik = cik
 

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from secpy.core.bulk_data import BulkDataEndpoint
 from secpy.core.endpoint_enum import EndpointEnum
+from secpy.core.mixins.base_data_object_mixin import BaseDataObjectMixin
 from secpy.core.mixins.base_endpoint_mixin import BaseEndpointMixin
 from types import SimpleNamespace
 
@@ -34,7 +35,7 @@ class CompanyFactsBulkEndpoint(BulkDataEndpoint):
         return CompanyFacts(data)
 
 
-class CompanyFacts:
+class CompanyFacts(BaseDataObjectMixin):
     class CompanyFactsSchemaEnum(Enum):
         CIK = "cik"
         ENTITY_NAME = "entityName"
@@ -76,7 +77,7 @@ class CompanyFacts:
 
     def get_statement_history(self):
         """
-        Groups facts together by the form type, financial year, and financial period to form a Statment instance
+        Groups facts together by the form type, financial year, and financial period to form a Statement instance
         @return: List[Statement]
         """
         filing_map = {}
@@ -105,7 +106,7 @@ class CompanyFacts:
         return form_period_unit_map
 
 
-class StatementHistory:
+class StatementHistory(BaseDataObjectMixin):
     def __init__(self, form_period_filing_map):
         self.__form_period_filing_map = form_period_filing_map
 
@@ -165,11 +166,11 @@ class StatementHistory:
         return result
 
 
-class Statement:
+class Statement(BaseDataObjectMixin):
     def __init__(self, facts):
         """
         Contains an aggregation of all facts available for a company for a particular form type, fiscal year, and fiscal period
-        @facts: Initial Fact instance to initialize object attributes
+        @facts: Initial Unit -> Fact map instance to initialize object attributes
         """
         fact = facts[list(facts.keys())[0]]
         self.start = fact.start
@@ -179,7 +180,11 @@ class Statement:
         self.fiscal_period = fact.fiscal_period
         self.form = fact.form
         self.filed = fact.filed
-        self.__facts_map = facts
+        self.__facts_map = self.__initialize_facts_map(facts, fact.concept_name)
+
+    @staticmethod
+    def __initialize_facts_map(facts, concept_name):
+        return {concept_name: facts}
 
     def add_fact_to_map(self, fact_name, unit_to_val_map):
         self.__facts_map[fact_name] = unit_to_val_map
@@ -187,8 +192,18 @@ class Statement:
     def get_facts_for_unit(self, fact_name, unit):
         return self.__facts_map[fact_name][unit]
 
+    def list_all_facts(self):
+        return self.__facts_map.keys()
 
-class HasFactMixin:
+    def get_all_facts(self):
+        """
+        Returns all facts for the given Statement
+        @return: dict, map of fact -> unit
+        """
+        return self.__facts_map
+
+
+class HasFactMixin(BaseDataObjectMixin):
     UNITS = "units"
 
     def __init__(self, data, tag):
@@ -225,7 +240,7 @@ class Concept(HasFactMixin):
         self.description = data.get(self.ConceptSchemaEnum.DESCRIPTION.value)
 
 
-class Fact:
+class Fact(BaseDataObjectMixin):
     class FactSchemaEnum(Enum):
         START = "start"
         END = "end"

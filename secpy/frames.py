@@ -1,6 +1,7 @@
 from enum import Enum
 
 from secpy.core.endpoint_enum import EndpointEnum
+from secpy.core.mixins.base_data_object_mixin import BaseDataObjectMixin
 from secpy.core.mixins.base_endpoint_mixin import BaseEndpointMixin
 from secpy.core.utils.period_format_opts import PeriodFormatOpts
 
@@ -11,7 +12,7 @@ class FramesEndpoint(BaseEndpointMixin):
     """
     _endpoint = EndpointEnum.FRAMES
 
-    def get_company_concept_for_ticker(self, taxonomy, concept, unit, period_format, use_instantaneous=False):
+    def get_company_concept_frame(self, taxonomy, concept, unit, period_format, use_instantaneous=False):
         period_format_arg = PeriodFormatOpts.format_period_format_arg(period_format, use_instantaneous)
         response = self._validate_args_and_make_request(self._endpoint,
                                                         TAXONOMY=taxonomy,
@@ -23,7 +24,9 @@ class FramesEndpoint(BaseEndpointMixin):
 
 
 
-class Frames:
+
+
+class Frames(BaseDataObjectMixin):
     class FramesSchemaEnum(Enum):
         TAXONOMY = "taxonomy"
         TAG = "tag"
@@ -54,7 +57,7 @@ class Frames:
         return [CompanyFrame(obj) for obj in company_frames_arr]
 
 
-class CompanyFrame:
+class CompanyFrame(BaseDataObjectMixin):
     class CompanyFrameSchemaEnum(Enum):
         ACCN = "accn"
         CIK = "cik"
