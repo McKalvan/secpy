@@ -1,10 +1,10 @@
+from abc import ABC, abstractmethod
 import os
 import shutil
 from zipfile import ZipFile
 from tempfile import gettempdir
 import re
 import json
-from abc import ABC, abstractmethod
 import time
 
 from secpy.core.mixins.base_endpoint_mixin import BaseEndpointMixin
@@ -91,6 +91,7 @@ class BulkDataEndpoint(BaseEndpointMixin, ABC):
         @param func: python callable, function to apply to each data object
         @return: list of return value of func
         """
+        self._get_bulk_data_if_none()
         return [func(self.__extract_file_and_parse_data(filename)) for filename in self.bulk_data_file_object.get_filelist()]
 
     def __extract_file_and_parse_data(self, filename):

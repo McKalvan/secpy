@@ -79,6 +79,7 @@ class NetworkClient:
     def download_file(self, endpoint, file_path, chunk_size, disable_progress_bar=False, **kwargs):
         """
         Downloads a file from the SEC REST API and stores it on disk
+        @param disable_progress_bar: bool, disables the progress bar from being logged
         @param endpoint: EndpointEnum value
         @param file_path: output location of the file
         @param chunk_size: number of bytes to read into memory while iterating over response

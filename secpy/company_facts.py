@@ -50,11 +50,11 @@ class CompanyFacts(BaseDataObjectMixin):
         @param data: dict
         """
         self.cik = self.__set_cik(data)
-        self.entity_name = data[self.CompanyFactsSchemaEnum.ENTITY_NAME.value]
+        self.entity_name = data.get(self.CompanyFactsSchemaEnum.ENTITY_NAME.value)
         self.taxonomies = self.__parse_taxonomies(data)
 
     def __set_cik(self, data):
-        cik = data[self.CompanyFactsSchemaEnum.CIK.value]
+        cik = data.get(self.CompanyFactsSchemaEnum.CIK.value, 0)
         return CIKOpts.format_cik(cik)
 
     def __parse_taxonomies(self, data):
@@ -62,7 +62,7 @@ class CompanyFacts(BaseDataObjectMixin):
             taxonomy_name.replace("-", "_"): SimpleNamespace(**{
                 concept_name:  Concept(concept_value, concept_name) for concept_name, concept_value in taxonomy_concepts.items()
             })
-            for taxonomy_name, taxonomy_concepts in data[self.CompanyFactsSchemaEnum.FACTS.value].items()
+            for taxonomy_name, taxonomy_concepts in data.get(self.CompanyFactsSchemaEnum.FACTS.value, {}).items()
         })
 
     def list_taxonomies(self):
