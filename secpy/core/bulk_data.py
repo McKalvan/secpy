@@ -11,7 +11,6 @@ from secpy.core.mixins.base_endpoint_mixin import BaseEndpointMixin
 
 
 class BulkDataEndpoint(BaseEndpointMixin, ABC):
-
     def __init__(self, user_agent, existing_archive=None, **kwargs):
         """
         Base class for downloading and parsing SEC bulk ZIP files.
@@ -77,6 +76,15 @@ class BulkDataEndpoint(BaseEndpointMixin, ABC):
         if not self.bulk_data_file_object:
             self.download_bulk_data(**kwargs)
 
+    def parsed_data_generator(self, filter_unlisted=True):
+        """
+        Creates generator of parsed data objects
+        @return: generator of parsed data objects
+        """
+        file_filter = self.bulk_data_file_object.unlisted_companies if filter_unlisted else []
+        self._get_bulk_data_if_none()
+        return (self.__extract_file_and_parse_data(filename) for filename in self.bulk_data_file_object.get_filelist() if filename not in file_filter)
+
     def for_all_companies(self, func):
         """
         Applies some function to all data in archive, ie min, max, avg of some value
@@ -108,6 +116,11 @@ class BulkDataEndpoint(BaseEndpointMixin, ABC):
 
     @abstractmethod
     def _parse_data(self, data):
+        """
+        Parses response data into some subclass of BaseDataObjectMixin
+        @param data: dict, data to parse
+        @return: parsed BaseDataObjectMixin instance
+        """
         pass
 
 
@@ -137,7 +150,7 @@ class BulkDataFileObject:
         """
         Creates the CIK/ticker -> filename mappings from files in bulk ZIP file
         @param ticker_cte_map: ticker -> CTEObject map. Used to map CIK from filenames -> ticker
-        @return:
+        @return: Unit
         """
         file_list = self.__zipfile.filelist
         valid_file_list = list(filter(lambda file: self.__filename_matches_pattern(file.filename), file_list))
@@ -175,9 +188,18 @@ class BulkDataFileObject:
         return self.__cik_to_filename_map[cik]
 
     def get_file(self, filename):
+        """
+        Opens file in zip archive and parses it to json
+        @param filename: file to parse
+        @return: dict, parsed json
+        """
         return json.loads(self.__zipfile.read(filename))
 
     def get_filelist(self):
+        """
+        Get list of all files in archive
+        @return: list
+        """
         return self.__zipfile.filelist
 
     def get_json_for_ticker_from_zip(self, ticker):
@@ -206,7 +228,15 @@ class BulkDataFileObject:
         return os.path.exists(self.archive_path)
 
     def get_ticker_to_filename_map(self):
+        """
+        Gets mapping of ticker to filenames
+        @return:
+        """
         return self.__ticker_to_filename_map
 
     def get_cik_to_filename_map(self):
+        """
+        Gets mapping of cik to filenames
+        @return:
+        """
         return self.__cik_to_filename_map

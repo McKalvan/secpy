@@ -12,7 +12,16 @@ class FramesEndpoint(BaseEndpointMixin):
     """
     _endpoint = EndpointEnum.FRAMES
 
-    def get_company_concept_frame(self, taxonomy, concept, unit, period_format, use_instantaneous=False):
+    def get_frames(self, taxonomy, concept, unit, period_format, use_instantaneous=False):
+        """
+        Gets a Frames instance for a given taxonomy, unit, and period
+        @param taxonomy: str, taxonomy to retrieve frames for (ie us-gaap, dei)
+        @param concept: str, concept to retrieve frames for (ie Assets, AccountsPayableCurrent)
+        @param unit: str, unit to retrieve frames for (ie USD, USD_shares
+        @param period_format: str or datetime instance, time period to retrieve frames for (ie, CY2022FY, CY2021Q1)
+        @param use_instantaneous: bool, use instantaneous frames
+        @return: Frames instance
+        """
         period_format_arg = PeriodFormatOpts.format_period_format_arg(period_format, use_instantaneous)
         response = self._validate_args_and_make_request(self._endpoint,
                                                         TAXONOMY=taxonomy,
@@ -21,9 +30,6 @@ class FramesEndpoint(BaseEndpointMixin):
                                                         PERIOD_FORMAT=period_format_arg
                                                         )
         return Frames(response)
-
-
-
 
 
 class Frames(BaseDataObjectMixin):

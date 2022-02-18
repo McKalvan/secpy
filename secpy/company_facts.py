@@ -17,10 +17,20 @@ class CompanyFactsEndpoint(BaseEndpointMixin):
     _endpoint = EndpointEnum.COMPANY_FACTS
 
     def get_company_facts_for_ticker(self, ticker):
+        """
+        Gets CompanyFacts for a given ticker
+        @param ticker: str, ticker to retrieve CompanyFacts for
+        @return: CompanyFacts
+        """
         cte_object = self._ticker_cte_map.lookup_ticker(ticker)
         return self.get_company_facts_for_cik(cte_object.cik)
 
     def get_company_facts_for_cik(self, cik):
+        """
+        Gets CompanyFacts for a given cik
+        @param cik: str, cik to retrieve CompanyFacts for
+        @return: CompanyFacts
+        """
         response = self._validate_args_and_make_request(self._endpoint, CIK=cik)
         return CompanyFacts(response)
 
@@ -66,14 +76,29 @@ class CompanyFacts(BaseDataObjectMixin):
         })
 
     def list_taxonomies(self):
+        """
+        List available taxonomies in current CompanyFacts instance
+        @return: List[str]
+        """
         return list(self.taxonomies.__dict__.keys())
 
     def get_taxonomy(self, taxonomy):
+        """
+        Get a particular taxonomy in the current CompanyFacts instance
+        @param taxonomy: str, taxonomy to retrieve
+        @return: dict of str -> Concept
+        """
         return self.taxonomies.__dict__[taxonomy]
 
-    def get_concept(self, taxonomy, fact):
+    def get_concept(self, taxonomy, concept):
+        """
+        Gets a particular Concept w/in a taxonomy of the current CompanyFacts instance
+        @param taxonomy: str, name of taxonomy to retrieve (us-gaap, dei, etc)
+        @param concept: str, name of concept to retrieve (Assets, AccountsPayableCurrent)
+        @return: Concept
+        """
         taxonomy_data = self.get_taxonomy(taxonomy)
-        return taxonomy_data.__dict__[fact]
+        return taxonomy_data.__dict__[concept]
 
     def get_statement_history(self):
         """
@@ -190,9 +215,19 @@ class Statement(BaseDataObjectMixin):
         self.__facts_map[fact_name] = unit_to_val_map
 
     def get_facts_for_unit(self, fact_name, unit):
+        """
+        Get Fact for a given fact and unit
+        @param fact_name: str, name of fact to retrieve
+        @param unit: str, unit to retrieve
+        @return: Fact
+        """
         return self.__facts_map[fact_name][unit]
 
     def list_all_facts(self):
+        """
+        Gets list of all available Facts w/in the given statement instance
+        @return: List[Fact]
+        """
         return self.__facts_map.keys()
 
     def get_all_facts(self):
@@ -217,9 +252,18 @@ class HasFactMixin(BaseDataObjectMixin):
         })
 
     def get_unit(self, key):
+        """
+        Gets a Fact associated w/ a given unit
+        @param key: str, unit to retrieve
+        @return: Fact
+        """
         return self.units.__dict__[key]
 
     def list_units(self):
+        """
+        List available units
+        @return: List[str]
+        """
         return list(self.units.__dict__.keys())
 
 

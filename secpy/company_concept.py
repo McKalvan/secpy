@@ -12,10 +12,24 @@ class CompanyConceptEndpoint(BaseEndpointMixin):
     _endpoint = EndpointEnum.COMPANY_CONCEPT
 
     def get_company_concept_for_ticker(self, ticker, taxonomy, concept):
+        """
+        Gets CompanyConcept for a given ticker, taxonomy, and concept
+        @param ticker: str, ticker to retrieve
+        @param taxonomy: str, taxonomy to retrieve (ie us-gaap, dei)
+        @param concept: str, concept to retrieve (ie Assets, AccountsPayableCurrent)
+        @return: CompanyConcept
+        """
         cte_object = self._ticker_cte_map.lookup_ticker(ticker)
         return self.get_company_concept_for_cik(cte_object.cik, taxonomy, concept)
 
     def get_company_concept_for_cik(self, cik, taxonomy, concept):
+        """
+        Gets CompanyConcept for a given cik, taxonomy, and concept
+        @param cik: str, cik to retrieve
+        @param taxonomy: str, taxonomy to retrieve (ie us-gaap, dei)
+        @param concept: str, concept to retrieve (ie Assets, AccountsPayableCurrent)
+        @return: CompanyConcepts
+        """
         response = self._validate_args_and_make_request(self._endpoint, CIK=cik, TAXONOMY=taxonomy, CONCEPT=concept)
         return CompanyConcept(response)
 

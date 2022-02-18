@@ -51,7 +51,7 @@ company_facts = client.company_facts()
 msft = company_facts.get_company_facts_for_ticker("MSFT")
 
 # Gets the most recent value of Assets (reported in USD) for MSFT 
-msft.get_concept(taxonomy="us_gaap", fact="Assets").get_unit("USD")[0].value
+msft.get_concept(taxonomy="us_gaap", concept="Assets").get_unit("USD")[0].value
 # Alternatively, this is statement to the previous
 msft.taxonomies.us_gaap.Assets.units.USD[0].value
 ```
