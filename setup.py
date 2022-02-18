@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 PACKAGE_NAME = "sec-python"
-VERSION = "0.2.1-alpha"
+VERSION = "0.3.0-alpha"
 
 setup(
     name=PACKAGE_NAME,
