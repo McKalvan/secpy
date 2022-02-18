@@ -109,7 +109,7 @@ writing better documentation, and improving on unit test coverage in secpy.
 
 ### Future areas of exploration
 The following are areas worthy of potential exploration in secpy:
-- Adding support for SEC EDGAR Full Text search: https://semver.org/ 
+- Adding support for SEC EDGAR Full Text search: https://www.sec.gov/edgar/search/
 
 ### Licensing
 All versions of secpy are currently provided under the [MIT License](https://mit-license.org/)
