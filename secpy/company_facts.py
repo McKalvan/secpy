@@ -100,6 +100,13 @@ class CompanyFacts(BaseDataObjectMixin):
         taxonomy_data = self.get_taxonomy(taxonomy)
         return taxonomy_data.__dict__[concept]
 
+    def get_all_concepts(self):
+        """
+        Gets all concepts in every taxonomy listed under a given CompanyFacts instance
+        @return: dict of Concepts
+        """
+        return {concept_name: concept_value for concept_dict in self.taxonomies.__dict__.values() for concept_name, concept_value in concept_dict.__dict__.items()}
+
     def get_statement_history(self):
         """
         Groups facts together by the form type, financial year, and financial period to form a Statement instance

@@ -19,5 +19,5 @@ class BaseEndpointMixin(BaseNetworkClientMixin):
 
     @staticmethod
     def __set_logger():
-        logging.basicConfig(format="%(asctime)s-%(pathname)s-%(levelname)-%(message)s")
-        return logging
+        logging.basicConfig(format='%(asctime)s- %(pathname)s - %(levelname)s - %(message)s')
+        return logging.getLogger("secpy")
