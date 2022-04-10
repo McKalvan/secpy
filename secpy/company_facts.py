@@ -112,42 +112,45 @@ class CompanyFacts(BaseDataObjectMixin):
         Groups facts together by the form type, financial year, and financial period to form a Statement instance
         @return: List[Statement]
         """
-        filing_map = {}
-        for concepts in self.taxonomies.__dict__.values():
-            for concept_name, concept in concepts.__dict__.items():
-                form_period_unit_map = self.__get_form_period_map_for_concept(concept)
-                for form_period, facts in form_period_unit_map.items():
-                    if form_period not in filing_map:
-                        filing_map[form_period] = Statement(facts)
-                    else:
-                        existing_filing_map = filing_map[form_period]
-                        existing_filing_map.add_fact_to_map(concept_name, facts)
-        return StatementHistory(filing_map)
-
-    @staticmethod
-    def __get_form_period_map_for_concept(concept):
-        form_period_unit_map = {}
-        for unit_name, facts in concept.units.__dict__.items():
-            for fact in facts:
-                form_period = fact.get_form_frame()
-                if form_period not in form_period_unit_map:
-                    form_period_unit_map[form_period] = {unit_name: fact}
-                else:
-                    existing_form_period_unit_mapping = form_period_unit_map[form_period]
-                    existing_form_period_unit_mapping[unit_name] = fact
-        return form_period_unit_map
+        return StatementHistory(self.get_all_concepts())
 
 
 class StatementHistory(BaseDataObjectMixin):
-    def __init__(self, form_period_filing_map):
-        self.__form_period_filing_map = form_period_filing_map
+    def __init__(self, concepts):
+        self.statements = self.__set_form_period_filing_map(concepts)
+
+    @staticmethod
+    def __set_form_period_filing_map(concepts):
+        filing_map = {}
+        for concept in concepts.values():
+            for unit_name in concept.list_units():
+                facts = concept.get_unit(unit_name)
+                for fact in facts:
+                    if fact.accn not in filing_map:
+                        filing_map[fact.accn] = {
+                            fact.concept_name: {
+                                unit_name: [fact]
+                            }
+                        }
+                    else:
+                        existing_filing = filing_map[fact.accn]
+                        if fact.concept_name not in existing_filing:
+                            existing_filing[fact.concept_name] = {unit_name: [fact]}
+                        else:
+                            existing_fact = existing_filing[fact.concept_name]
+                            if unit_name not in existing_fact:
+                                existing_fact[unit_name] = [fact]
+                            else:
+                                existing_unit = existing_fact[unit_name]
+                                existing_unit.append(fact)
+        return {accn: Statement(fact_list) for accn, fact_list in filing_map.items()}
 
     def get_all_statements(self):
         """
         Gets all statements in StatementHistory
         @return: List[Statements]
         """
-        return list(self.__form_period_filing_map.values())
+        return list(self.statements.values())
 
     def get_statement_for_form_and_period(self, form, period):
         """
@@ -157,7 +160,7 @@ class StatementHistory(BaseDataObjectMixin):
         @return: Statement
         """
         key = "{}_{}".format(form, period)
-        return self.__form_period_filing_map[key]
+        return self.statements[key]
 
     def get_statements_for_form(self, form):
         """
@@ -165,7 +168,7 @@ class StatementHistory(BaseDataObjectMixin):
         @param form: str
         @return: List[Statement]
         """
-        return [statement for key, statement in self.__form_period_filing_map.items() if key.startswith(form)]
+        return [statement for key, statement in self.statements.items() if key.startswith(form)]
 
     def get_statements_for_date_range(self, start_date=None, end_date=None, date_format="%y/%m/%d"):
         """
@@ -186,7 +189,7 @@ class StatementHistory(BaseDataObjectMixin):
             assert start_date < end_date, "start_date cannot be greater than end_date!"
 
         result = []
-        for statement in self.__form_period_filing_map.values():
+        for statement in self.statements.values():
             statement_filed_date = datetime.strptime(statement.filed, "%Y-%m-%d")
             if start_date and end_date and start_date < statement_filed_date < end_date:
                 result.append(statement)
@@ -204,22 +207,13 @@ class Statement(BaseDataObjectMixin):
         Contains an aggregation of all facts available for a company for a particular form type, fiscal year, and fiscal period
         @facts: Initial Unit -> Fact map instance to initialize object attributes
         """
-        fact = facts[list(facts.keys())[0]]
-        self.start = fact.start
-        self.end = fact.end
+        fact = list(list(facts.values())[0].values())[0][0]
         self.accn = fact.accn
         self.fiscal_year = fact.fiscal_year
         self.fiscal_period = fact.fiscal_period
         self.form = fact.form
         self.filed = fact.filed
-        self.__facts_map = self.__initialize_facts_map(facts, fact.concept_name)
-
-    @staticmethod
-    def __initialize_facts_map(facts, concept_name):
-        return {concept_name: facts}
-
-    def add_fact_to_map(self, fact_name, unit_to_val_map):
-        self.__facts_map[fact_name] = unit_to_val_map
+        self.facts_map = facts
 
     def get_facts_for_unit(self, fact_name, unit):
         """
@@ -228,21 +222,21 @@ class Statement(BaseDataObjectMixin):
         @param unit: str, unit to retrieve
         @return: Fact
         """
-        return self.__facts_map[fact_name][unit]
+        return self.facts_map[fact_name][unit]
 
     def list_all_facts(self):
         """
         Gets list of all available Facts w/in the given statement instance
         @return: List[Fact]
         """
-        return self.__facts_map.keys()
+        return self.facts_map.keys()
 
     def get_all_facts(self):
         """
         Returns all facts for the given Statement
         @return: dict, map of fact -> unit
         """
-        return self.__facts_map
+        return self.facts_map
 
 
 class HasFactMixin(BaseDataObjectMixin):
@@ -272,6 +266,9 @@ class HasFactMixin(BaseDataObjectMixin):
         @return: List[str]
         """
         return list(self.units.__dict__.keys())
+
+    def get_all_units(self):
+        return self.units.__dict__.values()
 
 
 class Concept(HasFactMixin):
